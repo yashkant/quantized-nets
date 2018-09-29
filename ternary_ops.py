@@ -1,15 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 import keras.backend as K
+from base_ops import switch
 
 
-def switch(condition, t, e):
-    if K.backend() == 'tensorflow':
-        import tensorflow as tf
-        return tf.where(condition, t, e)
-    elif K.backend() == 'theano':
-        import theano.tensor as tt
-        return tt.switch(condition, t, e)
 
 
 def _ternarize(W, H=1):

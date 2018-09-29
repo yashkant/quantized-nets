@@ -3,18 +3,9 @@ from __future__ import absolute_import
 import keras.backend as K
 import numpy as np
 import tensorflow as tf
-
-def log2_through(W):
-    constant = np.log(2)
-    logged = K.log(K.abs(W))/constant
-    return W + K.stop_gradient(logged-W)
+from base_ops import round_through, pow_through, log2_through, _hard_sigmoid
 
 
-def pow_through(W, base):
-    ones = K.ones_like(W)
-    base = ones + base - 1
-    powwed = K.pow(base, W)
-    return W + K.stop_gradient(powwed - W)
 
 
 def log_quantize(W, nb = 16):

@@ -3,31 +3,7 @@ from __future__ import absolute_import
 import keras.backend as K
 import numpy as np
 import tensorflow as tf
-
-def round_through(x):
-    '''Element-wise rounding to the closest integer with full gradient propagation.
-    A trick from [Sergey Ioffe](http://stackoverflow.com/a/36480182)
-    '''
-    rounded = K.round(x)
-    return x + K.stop_gradient(rounded - x)
-
-
-def clip_through(x, min, max):
-    '''Element-wise rounding to the closest integer with full gradient propagation.
-    A trick from [Sergey Ioffe](http://stackoverflow.com/a/36480182)
-    '''
-    clipped = K.clip(x,min,max)
-    return x + K.stop_gradient(clipped - x)
-
-def _hard_sigmoid(x):
-    '''Hard sigmoid different from the more conventional form (see definition of K.hard_sigmoid).
-
-    # Reference:
-    - [BinaryNet: Training Deep Neural Networks with Weights and Activations Constrained to +1 or -1, Courbariaux et al. 2016](http://arxiv.org/abs/1602.02830}
-
-    '''
-    x = (0.5 * x) + 0.5
-    return K.clip(x, 0, 1)
+from base_ops import round_through, _hard_sigmoid
 
 
 def binary_sigmoid(x):

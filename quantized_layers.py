@@ -1,8 +1,25 @@
+from keras.layers import InputSpec, Dense, Conv2D, SimpleRNN
+import numpy as np
+from keras import constraints
+from keras import initializers
+from quantized_ops import quantize
+import keras.backend as K
 
+class Clip(constraints.Constraint):
+    def __init__(self, min_value, max_value=None):
+        self.min_value = min_value
+        self.max_value = max_value
+        if not self.max_value:
+            self.max_value = -self.min_value
+        if self.min_value > self.max_value:
+            self.min_value, self.max_value = self.max_value, self.min_value
 
+    def __call__(self, p):
+        return K.clip(p, self.min_value, self.max_value)
 
-
-
+    def get_config(self):
+        return {"min_value": self.min_value,
+                "max_value": self.max_value}
 
 
 
