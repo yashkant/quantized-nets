@@ -21,9 +21,9 @@ from keras.callbacks import LearningRateScheduler, Callback
 from keras.utils import np_utils
 from keras.activations import relu
 from keras.callbacks import ModelCheckpoint
-from quantized_layers import QuantizedConv2D, QuantizedDense
-from quantized_ops import quantized_relu as quantized_relu_op
-from quantized_ops import quantized_tanh as quantized_tanh_op
+from quantize.quantized_layers import QuantizedConv2D, QuantizedDense
+from quantize.quantized_ops import quantized_relu as quantized_relu_op
+from quantize.quantized_ops import quantized_tanh as quantized_tanh_op
 
 import mnist_data
 import math

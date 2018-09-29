@@ -1,14 +1,9 @@
-# -*- coding: utf-8 -*-
-import numpy as np
-
-from keras import backend as K
-# import tensorflow as tf
 from keras.layers import InputSpec, Dense, Conv2D, SimpleRNN
+import numpy as np
 from keras import constraints
 from keras import initializers
-
-from ternary_ops import ternarize as ternarize, ternarize_dot
-
+from quantize.quantized_ops import quantize
+import keras.backend as K
 
 class Clip(constraints.Constraint):
     def __init__(self, min_value, max_value=None):
@@ -27,20 +22,19 @@ class Clip(constraints.Constraint):
                 "max_value": self.max_value}
 
 
-class TernaryDense(Dense):
-    ''' Ternarized Dense layer
 
+class QuantizedDense(Dense):
+    ''' Binarized Dense layer
     References: 
-    - [Recurrent Neural Networks with Limited Numerical Precision](http://arxiv.org/abs/1608.06902}
-    - [Ternary Weight Networks](http://arxiv.org/abs/1605.04711)
+    "QuantizedNet: Training Deep Neural Networks with Weights and Activations Constrained to +1 or -1" [http://arxiv.org/abs/1602.02830]
     '''
-    def __init__(self, units, H=1., kernel_lr_multiplier='Glorot', bias_lr_multiplier=None, ternarize = True, **kwargs):
-        super(TernaryDense, self).__init__(units, **kwargs)
+    def __init__(self, units, H=1., nb=16, kernel_lr_multiplier='Glorot', bias_lr_multiplier=None, **kwargs):
+        super(QuantizedDense, self).__init__(units, **kwargs)
         self.H = H
+        self.nb = nb
         self.kernel_lr_multiplier = kernel_lr_multiplier
         self.bias_lr_multiplier = bias_lr_multiplier
-        self.ternarize = ternarize
-        
+        super(QuantizedDense, self).__init__(units, **kwargs)
     
     def build(self, input_shape):
         assert len(input_shape) >= 2
@@ -63,7 +57,7 @@ class TernaryDense(Dense):
 
         if self.use_bias:
             self.lr_multipliers = [self.kernel_lr_multiplier, self.bias_lr_multiplier]
-            self.bias = self.add_weight(shape=(self.output_dim,),
+            self.bias = self.add_weight(shape=(self.units,),
                                      initializer=self.bias_initializer,
                                      name='bias',
                                      regularizer=self.bias_regularizer,
@@ -75,42 +69,41 @@ class TernaryDense(Dense):
         self.input_spec = InputSpec(min_ndim=2, axes={-1: input_dim})
         self.built = True
 
+
     def call(self, inputs):
-        if(self.ternarize):
-            print("------Ternarize Weights------")
-            ternary_kernel = ternarize(self.kernel, H=self.H) 
-        else:
-            print("------ No Ternarize Weights------")
-            ternary_kernel = self.kernel
-        output = K.dot(inputs, ternary_kernel)
+        quantized_kernel = quantize(self.kernel, nb=self.nb)
+        output = K.dot(inputs, quantized_kernel)
         if self.use_bias:
             output = K.bias_add(output, self.bias)
         if self.activation is not None:
             output = self.activation(output)
+
+
         return output
+        
         
     def get_config(self):
         config = {'H': self.H,
                   'kernel_lr_multiplier': self.kernel_lr_multiplier,
                   'bias_lr_multiplier': self.bias_lr_multiplier}
-        base_config = super(TernaryDense, self).get_config()
+        base_config = super(QuantizedDense, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
 
-class TernaryConv2D(Conv2D):
-    '''Ternarized Convolution2D layer
+class QuantizedConv2D(Conv2D):
+    '''Binarized Convolution2D layer
     References: 
-    - [Recurrent Neural Networks with Limited Numerical Precision](http://arxiv.org/abs/1608.06902}
-    - [Ternary Weight Networks](http://arxiv.org/abs/1605.04711)
+    "QuantizedNet: Training Deep Neural Networks with Weights and Activations Constrained to +1 or -1" [http://arxiv.org/abs/1602.02830]
     '''
-    def __init__(self, filters, kernel_lr_multiplier='Glorot', 
-                 bias_lr_multiplier=None, H=1., ternarize = True, **kwargs):
-        super(TernaryConv2D, self).__init__(filters, **kwargs)
+    def __init__(self, filters, kernel_regularizer=None,activity_regularizer=None, kernel_lr_multiplier='Glorot',
+                 bias_lr_multiplier=None, H=1., nb=16,  **kwargs):
+        super(QuantizedConv2D, self).__init__(filters, **kwargs)
         self.H = H
+        self.nb = nb
         self.kernel_lr_multiplier = kernel_lr_multiplier
         self.bias_lr_multiplier = bias_lr_multiplier
-        self.ternarize = ternarize
-
+        self.activity_regularizer =activity_regularizer
+        self.kernel_regularizer = kernel_regularizer
         
     def build(self, input_shape):
         if self.data_format == 'channels_first':
@@ -139,16 +132,17 @@ class TernaryConv2D(Conv2D):
 
         self.kernel_constraint = Clip(-self.H, self.H)
         self.kernel_initializer = initializers.RandomUniform(-self.H, self.H)
-
+        #self.bias_initializer = initializers.RandomUniform(-self.H, self.H)
         self.kernel = self.add_weight(shape=kernel_shape,
                                  initializer=self.kernel_initializer,
                                  name='kernel',
                                  regularizer=self.kernel_regularizer,
                                  constraint=self.kernel_constraint)
+
         if self.use_bias:
             self.lr_multipliers = [self.kernel_lr_multiplier, self.bias_lr_multiplier]
-            self.bias = self.add_weight((self.output_dim,),
-                                     initializer=self.bias_initializers,
+            self.bias = self.add_weight((self.filters,),
+                                     initializer=self.bias_initializer,
                                      name='bias',
                                      regularizer=self.bias_regularizer,
                                      constraint=self.bias_constraint)
@@ -162,25 +156,25 @@ class TernaryConv2D(Conv2D):
         self.built = True
 
     def call(self, inputs):
+        quantized_kernel = quantize(self.kernel, nb=self.nb)
 
-        ternary_kernel = self.kernel
-        
+        inverse_kernel_lr_multiplier = 1./self.kernel_lr_multiplier
+        inputs_qnn_gradient = (inputs - (1. - 1./inverse_kernel_lr_multiplier) * K.stop_gradient(inputs))\
+                  * inverse_kernel_lr_multiplier
 
-        if(self.ternarize):
-            print("------Ternarize Weights------")
-            ternary_kernel = ternarize(ternary_kernel, H=self.H)
-        else:
-            print("------ No Ternarize Weights------")
-            ternary_kernel = K.cast(self.kernel, 'float16')
-            ternary_kernel = K.cast(ternary_kernel, 'float32')
-
-        outputs = K.conv2d(
-            inputs,
-            ternary_kernel,
+        outputs_qnn_gradient = K.conv2d(
+            inputs_qnn_gradient,
+            quantized_kernel,
             strides=self.strides,
             padding=self.padding,
             data_format=self.data_format,
             dilation_rate=self.dilation_rate)
+
+        outputs = (outputs_qnn_gradient - (1. - 1./self.kernel_lr_multiplier) * K.stop_gradient(outputs_qnn_gradient))\
+                  * self.kernel_lr_multiplier
+
+
+        #outputs = outputs*K.mean(K.abs(self.kernel))
 
         if self.use_bias:
             outputs = K.bias_add(
@@ -190,77 +184,16 @@ class TernaryConv2D(Conv2D):
 
         if self.activation is not None:
             return self.activation(outputs)
+
         return outputs
         
     def get_config(self):
         config = {'H': self.H,
                   'kernel_lr_multiplier': self.kernel_lr_multiplier,
                   'bias_lr_multiplier': self.bias_lr_multiplier}
-        base_config = super(TernaryConv2D, self).get_config()
+        base_config = super(QuantizedConv2D, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
 
-class TernaryRNN(SimpleRNN):
-    ''' Ternarized RNN layer
 
-    References: 
-    - [Recurrent Neural Networks with Limited Numerical Precision](http://arxiv.org/abs/1608.06902}
-    '''
-    def preprocess_input(self, inputs, training=None):
-        return inputs
 
-    def step(self, inputs, states):
-        if 0 < self.dropout < 1:
-            h = ternarize_dot(inputs * states[1], self.kernel)
-        else:
-            h = ternarize_dot(inputs, self.kernel)
-        if self.bias is not None:
-            h = K.bias_add(h, self.bias)
-
-        prev_output = states[0]
-        if 0 < self.recurrent_dropout < 1:
-            prev_output *= states[2]
-        output = h + ternarize_dot(prev_output, self.recurrent_kernel)
-        if self.activation is not None:
-            output = self.activation(output)
-
-        # Properly set learning phase on output tensor.
-        if 0 < self.dropout + self.recurrent_dropout:
-            output._uses_learning_phase = True
-        return output, [output]
-
-    def get_constants(self, inputs, training=None):
-        constants = []
-        if 0 < self.dropout < 1:
-            input_shape = K.int_shape(inputs)
-            input_dim = input_shape[-1]
-            ones = K.ones_like(K.reshape(inputs[:, 0, 0], (-1, 1)))
-            ones = K.tile(ones, (1, int(input_dim)))
-
-            def dropped_inputs():
-                return K.dropout(ones, self.dropout)
-
-            dp_mask = K.in_train_phase(dropped_inputs,
-                                       ones,
-                                       training=training)
-            constants.append(dp_mask)
-        else:
-            constants.append(K.cast_to_floatx(1.))
-
-        if 0 < self.recurrent_dropout < 1:
-            ones = K.ones_like(K.reshape(inputs[:, 0, 0], (-1, 1)))
-            ones = K.tile(ones, (1, self.units))
-
-            def dropped_inputs():
-                return K.dropout(ones, self.recurrent_dropout)
-            rec_dp_mask = K.in_train_phase(dropped_inputs,
-                                           ones,
-                                           training=training)
-            constants.append(rec_dp_mask)
-        else:
-            constants.append(K.cast_to_floatx(1.))
-        return constants
-
-# Aliases
-
-TernaryConvolution2D = TernaryConv2D

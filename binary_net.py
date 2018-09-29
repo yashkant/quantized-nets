@@ -19,8 +19,8 @@ from keras.callbacks import LearningRateScheduler, Callback
 from keras.utils import np_utils
 from keras.activations import relu
 from keras.callbacks import ModelCheckpoint
-from binary_ops import binary_tanh as binary_tanh_op
-from binary_layers import BinaryDense, BinaryConv2D, DepthwiseBinaryConv2D
+from binarize.binary_ops import binary_tanh as binary_tanh_op
+from binarize.binary_layers import BinaryDense, BinaryConv2D, DepthwiseBinaryConv2D
 import mnist_data
 import math
 

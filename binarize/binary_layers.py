@@ -8,7 +8,7 @@ from keras.layers import InputSpec, Layer, Dense, Conv2D, Dropout, SeparableConv
 from keras import constraints
 from keras import initializers
 
-from binary_ops import binarize
+from binarize.binary_ops import binarize
 
 # from binary_ops import log_quantize as quantize
 # from binary_ops import quantize as quantize

@@ -19,8 +19,8 @@ from keras.callbacks import LearningRateScheduler, Callback
 from keras.utils import np_utils
 from keras.activations import relu
 from keras.callbacks import ModelCheckpoint
-from ternary_ops import ternarize as ternarize_op
-from ternary_layers import TernaryDense, TernaryConv2D
+from ternarize.ternary_ops import ternarize as ternarize_op
+from ternarize.ternary_layers import TernaryDense, TernaryConv2D
 import mnist_data
 import math
 
