@@ -4,6 +4,7 @@ from keras import constraints
 from keras import initializers
 from quantize.quantized_ops import quantize
 import keras.backend as K
+import tensorflow as tf
 
 class Clip(constraints.Constraint):
     def __init__(self, min_value, max_value=None):
@@ -157,7 +158,7 @@ class QuantizedConv2D(Conv2D):
 
     def call(self, inputs):
         quantized_kernel = quantize(self.kernel, nb=self.nb)
-
+        # This is used to scale the gradients during back-prop with the glorot scheme
         inverse_kernel_lr_multiplier = 1./self.kernel_lr_multiplier
         inputs_qnn_gradient = (inputs - (1. - 1./inverse_kernel_lr_multiplier) * K.stop_gradient(inputs))\
                   * inverse_kernel_lr_multiplier

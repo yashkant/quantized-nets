@@ -84,12 +84,10 @@ def quantize(W, nb = 16, clip_through=False):
     non_sign_bits = nb-1
     m = pow(2,non_sign_bits)
     W = tf.Print(W,[W, non_sign_bits],message = "---- W Quantize Before---- \n ",summarize=10, first_n = 5)
-    W = W*1
     if clip_through:
         Wq = clip_through(round_through(W*m),-m,m-1)/m
     else:
         Wq = K.clip(round_through(W*m),-m,m-1)/m
-    Wq = tf.Print(Wq,[Wq],message = "---- Wq Quantize After---- \n ",summarize=5, first_n = 5)
-    Wq = Wq*1
+    Wq = tf.Print(Wq,[Wq],message = "---- Wq Quantize After---- \n ",summarize=10, first_n = 5)
     #Wq = tf.Print(Wq,[Wq],summarize=20)
     return Wq
