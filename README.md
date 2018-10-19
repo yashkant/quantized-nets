@@ -54,7 +54,7 @@ The skeletal overview of the project is as follows:
 
 Usage
 ----------
-In the directory root folder, to run the examples use: 
+In the root directory, to run the examples use: 
 
 ```bash 
 python {example}_net.py
@@ -70,3 +70,6 @@ Also, you can import the layers directly in your own Keras or Tensorflow code. R
 [5]:https://keras.io/#installation
 [6]:https://arxiv.org/pdf/1711.00215.pdf
 [7]:https://blog.keras.io/keras-as-a-simplified-interface-to-tensorflow-tutorial.html
+
+
+
