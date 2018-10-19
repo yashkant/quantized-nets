@@ -6,10 +6,10 @@ from functools import partial
 seed = 1337
 np.random.seed(seed) 
 
-# ------------ Command Line Parameters ------------
-import os
-os.environ["CUDA_VISIBLE_DEVICES"]= sys.argv[1]
-# -------------------------------------------------
+# # ------------ Command Line Parameters ------------
+# import os
+# os.environ["CUDA_VISIBLE_DEVICES"]= sys.argv[1]
+# # -------------------------------------------------
 
 import keras.backend as K
 from keras.datasets import mnist
@@ -85,8 +85,8 @@ def add_quant_conv_layer(model, conv_num_filters, conv_kernel_size, conv_strides
     return model 
 
 
-print("Quantize to bits: ", sys.argv[2])
-n_bits = int(sys.argv[2])
+print("Quantize to bits: ", sys.argv[1])
+n_bits = int(sys.argv[1])
 
 
 # -------------Model Architecture-----

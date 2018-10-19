@@ -72,10 +72,8 @@ class TernaryDense(Dense):
 
     def call(self, inputs):
         if(self.ternarize):
-            print("------Ternarize Weights------")
             ternary_kernel = ternarize(self.kernel, H=self.H) 
         else:
-            print("------ No Ternarize Weights------")
             ternary_kernel = self.kernel
         output = K.dot(inputs, ternary_kernel)
         if self.use_bias:
