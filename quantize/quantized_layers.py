@@ -25,10 +25,7 @@ class Clip(constraints.Constraint):
 
 
 class QuantizedDense(Dense):
-    ''' Binarized Dense layer
-    References: 
-    "QuantizedNet: Training Deep Neural Networks with Weights and Activations Constrained to +1 or -1" [http://arxiv.org/abs/1602.02830]
-    '''
+
     def __init__(self, units, H=1., nb=16, kernel_lr_multiplier='Glorot', bias_lr_multiplier=None, **kwargs):
         super(QuantizedDense, self).__init__(units, **kwargs)
         self.H = H
@@ -92,10 +89,7 @@ class QuantizedDense(Dense):
 
 
 class QuantizedConv2D(Conv2D):
-    '''Binarized Convolution2D layer
-    References: 
-    "QuantizedNet: Training Deep Neural Networks with Weights and Activations Constrained to +1 or -1" [http://arxiv.org/abs/1602.02830]
-    '''
+
     def __init__(self, filters, kernel_regularizer=None,activity_regularizer=None, kernel_lr_multiplier='Glorot',
                  bias_lr_multiplier=None, H=1., nb=16,  **kwargs):
         super(QuantizedConv2D, self).__init__(filters, **kwargs)

@@ -4,10 +4,6 @@ import sys
 seed = 1337
 np.random.seed(seed) 
 
-# ------------ Command Line Parameters ------------
-import os
-os.environ["CUDA_VISIBLE_DEVICES"]= sys.argv[1]
-# -------------------------------------------------
 
 import keras.backend as K
 from keras.datasets import mnist

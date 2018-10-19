@@ -28,12 +28,7 @@ class Clip(constraints.Constraint):
 
 
 class TernaryDense(Dense):
-    ''' Ternarized Dense layer
 
-    References: 
-    - [Recurrent Neural Networks with Limited Numerical Precision](http://arxiv.org/abs/1608.06902}
-    - [Ternary Weight Networks](http://arxiv.org/abs/1605.04711)
-    '''
     def __init__(self, units, H=1., kernel_lr_multiplier='Glorot', bias_lr_multiplier=None, ternarize = True, **kwargs):
         super(TernaryDense, self).__init__(units, **kwargs)
         self.H = H
@@ -98,11 +93,7 @@ class TernaryDense(Dense):
 
 
 class TernaryConv2D(Conv2D):
-    '''Ternarized Convolution2D layer
-    References: 
-    - [Recurrent Neural Networks with Limited Numerical Precision](http://arxiv.org/abs/1608.06902}
-    - [Ternary Weight Networks](http://arxiv.org/abs/1605.04711)
-    '''
+
     def __init__(self, filters, kernel_lr_multiplier='Glorot', 
                  bias_lr_multiplier=None, H=1., ternarize = True, **kwargs):
         super(TernaryConv2D, self).__init__(filters, **kwargs)
@@ -167,10 +158,8 @@ class TernaryConv2D(Conv2D):
         
 
         if(self.ternarize):
-            print("------Ternarize Weights------")
             ternary_kernel = ternarize(ternary_kernel, H=self.H)
         else:
-            print("------ No Ternarize Weights------")
             ternary_kernel = K.cast(self.kernel, 'float16')
             ternary_kernel = K.cast(ternary_kernel, 'float32')
 
@@ -201,11 +190,7 @@ class TernaryConv2D(Conv2D):
 
 
 class TernaryRNN(SimpleRNN):
-    ''' Ternarized RNN layer
 
-    References: 
-    - [Recurrent Neural Networks with Limited Numerical Precision](http://arxiv.org/abs/1608.06902}
-    '''
     def preprocess_input(self, inputs, training=None):
         return inputs
 

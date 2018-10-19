@@ -10,13 +10,9 @@ from keras import initializers
 
 from binarize.binary_ops import binarize
 
-# from binary_ops import log_quantize as quantize
-# from binary_ops import quantize as quantize
-
 
 class DropoutNoScale(Dropout):
-    '''Keras Dropout does scale the input in training phase, which is undesirable here.
-    '''
+
     def call(self, inputs, training=None):
         if 0. < self.rate < 1.:
             noise_shape = self._get_noise_shape(inputs)
@@ -47,10 +43,7 @@ class Clip(constraints.Constraint):
 
 
 class BinaryDense(Dense):
-    ''' Binarized Dense layer
-    References: 
-    "BinaryNet: Training Deep Neural Networks with Weights and Activations Constrained to +1 or -1" [http://arxiv.org/abs/1602.02830]
-    '''
+
     def __init__(self, units, H=1., kernel_lr_multiplier='Glorot', bias_lr_multiplier=None, **kwargs):
         super(BinaryDense, self).__init__(units, **kwargs)
         self.H = H
@@ -113,10 +106,7 @@ class BinaryDense(Dense):
 
 
 class BinaryConv2D(Conv2D):
-    '''Binarized Convolution2D layer
-    References: 
-    "BinaryNet: Training Deep Neural Networks with Weights and Activations Constrained to +1 or -1" [http://arxiv.org/abs/1602.02830]
-    '''
+
     def __init__(self, filters,strides, kernel_lr_multiplier='Glorot', 
                  bias_lr_multiplier=None, H=1., binarize = True,  **kwargs):
         super(BinaryConv2D, self).__init__(filters, **kwargs)
@@ -180,10 +170,8 @@ class BinaryConv2D(Conv2D):
 
     def call(self, inputs):
         if(self.binarize is True):
-            print('-------------Will Binarize-------------')
             binary_kernel = binarize(self.kernel, H=self.H) 
         else:
-            print('-------------Wont Binarize-------------')
             binary_kernel = self.kernel
         outputs = K.conv2d(
             inputs,
@@ -212,10 +200,7 @@ class BinaryConv2D(Conv2D):
 
 
 class DepthwiseBinaryConv2D(SeparableConv2D):
-    '''Binarized Convolution2D layer
-    References: 
-    "BinaryNet: Training Deep Neural Networks with Weights and Activations Constrained to +1 or -1" [http://arxiv.org/abs/1602.02830]
-    '''
+
     def __init__(self, filters,strides, kernel_lr_multiplier='Glorot', 
                  bias_lr_multiplier=None, H=1., **kwargs):
         super(DepthwiseBinaryConv2D, self).__init__(filters, **kwargs)

@@ -107,11 +107,7 @@ conv_num_filters = 64
 conv_strides = 1
 mpool_kernel_size = 2
 mpool_strides = 2
-# n_bits = 6
 
-# depthwise_mul = params_same_depthwise_mul(conv_kernel_size, conv_kernel_size, conv_num_filters)
-# print("depthwise_mul: ", depthwise_mul)
-# add_dep_conv_layer(model = model, conv_num_filters = conv_num_filters, conv_kernel_size = conv_kernel_size, conv_strides = conv_strides, mpool_kernel_size = mpool_kernel_size, mpool_strides = mpool_strides, depthwise_mul = depthwise_mul)
 add_quant_conv_layer(model = model, conv_num_filters = conv_num_filters, conv_kernel_size = conv_kernel_size, conv_strides = conv_strides, mpool_kernel_size = mpool_kernel_size, mpool_strides = mpool_strides, n_bits=n_bits)
 
 model.add(Flatten())
