@@ -57,7 +57,9 @@ Usage
 In the root directory, to run the examples use: 
 
 ```bash 
-python {example}_net.py
+python3 {example}_net.py  # for binary and ternary net
+
+python3 quantized_net.py -nb N  # For quantized net, replace N with the number of bits you want to quantize the weights and activations to. (default value of N =4)
 ```
 
 Also, you can import the layers directly in your own Keras or Tensorflow code. Read [this blog][7] to know how to use Keras layers in Tensorflow
