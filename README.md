@@ -1,6 +1,6 @@
 # Quantized-Nets
 
-**This mini-project contains code for building [Binary][1], [Ternary][2] and [N-bit Quantized][3] Convolutional Neural Networks built with Keras.** 
+**This mini-project contains code for building [Binary][1], [Ternary][2] and [N-bit Quantized][3] Convolutional Neural Networks with Keras or Tensorflow.** 
 
 
 Introduction
