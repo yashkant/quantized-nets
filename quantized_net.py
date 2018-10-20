@@ -6,11 +6,6 @@ from functools import partial
 seed = 1337
 np.random.seed(seed) 
 
-# # ------------ Command Line Parameters ------------
-# import os
-# os.environ["CUDA_VISIBLE_DEVICES"]= sys.argv[1]
-# # -------------------------------------------------
-
 import keras.backend as K
 from keras.datasets import mnist
 from keras.models import Sequential
@@ -24,9 +19,16 @@ from keras.callbacks import ModelCheckpoint
 from quantize.quantized_layers import QuantizedConv2D, QuantizedDense
 from quantize.quantized_ops import quantized_relu as quantized_relu_op
 from quantize.quantized_ops import quantized_tanh as quantized_tanh_op
-
 import mnist_data
 import math
+from argparse import ArgumentParser
+
+
+
+parser = ArgumentParser()
+parser.add_argument("-nb", "--num_bits", dest="num_bits",
+                    help="Number of bits to quantize", default = 4)
+args = parser.parse_args()
 
 
 def mnist_process(x):
@@ -63,7 +65,7 @@ pool_size = (2, 2)
 hidden_units = 128
 classes = 10
 use_bias = False
-
+n_bits = int(args.num_bits)
 # learning rate schedule
 lr_start = 1e-3
 lr_end = 1e-4
@@ -85,9 +87,11 @@ def add_quant_conv_layer(model, conv_num_filters, conv_kernel_size, conv_strides
     return model 
 
 
-print("Quantize to bits: ", sys.argv[1])
-n_bits = int(sys.argv[1])
+assert n_bits >= 2 , "Numer of bits should be at least 2 and atmost 32"
+assert n_bits <= 32 , "Numer of bits should be at least 2 and atmost 32"
 
+print("Quantize to bits: ", n_bits)
+print(type(n_bits))
 
 # -------------Model Architecture-----
 
@@ -127,6 +131,7 @@ model.summary()
 # ---------------------------------
 
 
+
 # ------------- MNIST Unpack and Augment Code------------
 
 train_total_data, train_size, test_data, test_labels = mnist_data.prepare_MNIST_data(False)
@@ -142,6 +147,9 @@ print("Y train: ", y_train.shape)
 # --------------------------------------------------------
 
 
+
+# -------- Train Loop----------------------
+
 lr_scheduler = LearningRateScheduler(lambda e: lr_start * lr_decay ** e)
 history = model.fit(x_train, y_train,
                     batch_size=batch_size, epochs=epochs,
@@ -153,3 +161,5 @@ history = model.fit(x_train, y_train,
 score = model.evaluate(x_test, y_test, verbose=1)
 print('Test score:', score[0])
 print('Test accuracy:', score[1])
+
+# ---------------------------------------
