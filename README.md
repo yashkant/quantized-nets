@@ -78,6 +78,7 @@ Thanks to
 This work wouldn't have been possible without the help from the following repos:
 
 1. https://github.com/DingKe/nn_playground/
+2. https://github.com/BertMoons/QuantizedNeuralNetworks-Keras-Tensorflow
 
 
 
