@@ -75,6 +75,7 @@ Also, you can import the layers directly in your own Keras or Tensorflow code. R
 
 Thanks to
 ---------
+This work wouldn't have been possible without the help from the following repos:
 
 1. https://github.com/DingKe/nn_playground/
 
