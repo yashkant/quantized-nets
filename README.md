@@ -73,5 +73,10 @@ Also, you can import the layers directly in your own Keras or Tensorflow code. R
 [6]:https://arxiv.org/pdf/1711.00215.pdf
 [7]:https://blog.keras.io/keras-as-a-simplified-interface-to-tensorflow-tutorial.html
 
+Thanks To
+---------
+
+1. https://github.com/DingKe/nn_playground/
+
 
 
